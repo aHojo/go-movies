@@ -1,13 +1,11 @@
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 
-
-const Movies = () => {
-  const [movies, setMovies] = useState([])
+const Genres = () => {
+  const [genres, setGenres] = useState([])
   const [isLoaded, setisLoaded] = useState(false)
   const [error, setError] = useState(null)
-
 
   useEffect(() => {
 
@@ -15,7 +13,7 @@ const Movies = () => {
 
       try {
 
-        const result = await fetch("http://localhost:4000/v1/movies")
+        const result = await fetch("http://localhost:4000/v1/genres")
         if (result.status !== 200) {
           let err = new Error();
           err.message = "Invalid response code: " + result.status
@@ -23,8 +21,9 @@ const Movies = () => {
         }
         const data = await result.json()
 
-        setMovies(data.movies)
+        setGenres(data.genres)
         setisLoaded(true)
+
       } catch (err) {
         setError(err)
       }
@@ -40,17 +39,26 @@ const Movies = () => {
   if (!isLoaded) {
     return <p>Loading....</p>
   }
-
   return (
-    <Fragment>
-      <h2>Choose a movie</h2>
+    <React.Fragment>
+      <h2>Genres: </h2>
       <div className="list-group">
-        {movies.map((m) => (
-          <Link key={m.id} className="list-group-item list-group-item-action" to={`/movies/${m.id}`}>{m.title}</Link>
-        ))}
-      </div>
-    </Fragment>
-  );
-}
+        {genres.length !== 0 ?
+          genres.map((m) => {
+            return (
 
-export default Movies
+              <Link key={m.id} className="list-group-item list-group-item-action" to={{
+                pathname: `/genres/${m.id}`,
+                state: { genreName: m.genre_name }
+              }}>{m.genre_name}</Link>
+
+            )
+          })
+          :
+          null
+        }
+      </div>
+    </React.Fragment>
+  )
+}
+export default Genres;
