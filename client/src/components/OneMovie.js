@@ -67,6 +67,10 @@ const OneMovie = ({ match }) => {
                         <td>{movie.title}</td>
                     </tr>
                     <tr>
+                        <td><strong>Description:</strong></td>
+                        <td>{movie.description}</td>
+                    </tr>
+                    <tr>
                         <td><strong>Run time:</strong></td>
                         <td>{movie.runtime} minutes</td>
                     </tr>
