@@ -62,11 +62,15 @@ export default class EditMovie extends Component {
 
     const data = new FormData(event.target);
     const payload = Object.fromEntries(data.entries());
-    console.log(payload);
+
+    const myHeaders = new Headers();
+    myHeaders.append("Authorization", `Bearer ${this.props.jwt}`);
+    myHeaders.append("Content-Type", "application/json");
 
     const requestOptions = {
       method: 'POST',
       body: JSON.stringify(payload),
+      headers: myHeaders,
     }
 
     const result = await fetch(`http://localhost:4000/v1/admin/editmovie`, requestOptions)
@@ -104,6 +108,14 @@ export default class EditMovie extends Component {
   }
 
   async componentDidMount() {
+    console.log("JWT in EditMovie componentdidmount", this.props.jwt)
+
+    if (this.props.jwt === "") {
+      this.props.history.push({
+        pathname: "/login"
+      })
+      return
+    }
     const id = this.props.match.params.id;
 
     if (id > 0) {
@@ -114,7 +126,7 @@ export default class EditMovie extends Component {
         this.setState({ error: err });
       }
       const json = await result.json();
-      console.log(result.status, json);
+      
       const releaseDate = new Date(json.movie.release_date);
 
       this.setState({
@@ -146,7 +158,17 @@ export default class EditMovie extends Component {
         {
           label: 'Yes',
           onClick: async () => {
-            const data = await fetch(`http://localhost:4000/v1/admin/editmovie/${this.state.movie.id}`, {method: "DELETE"})
+            console.log(this.props.jwt)
+            const myHeaders = new Headers();
+            myHeaders.append("Authorization", `Bearer ${this.props.jwt}`);
+            myHeaders.append("Content-Type", "application/json");
+
+            const requestOptions = {
+              method: 'DELETE',
+              headers: myHeaders,
+            }
+
+            const data = await fetch(`http://localhost:4000/v1/admin/editmovie/${this.state.movie.id}`, requestOptions)
             const json = await data.json();
             if  (json.error) {
               this.setState({
@@ -168,7 +190,7 @@ export default class EditMovie extends Component {
   }
   render() {
     let { movie, isLoaded, error, alert } = this.state;
-    console.log(movie)
+    
     if (error) {
       return <div>Error: {error.message}</div>;
     }

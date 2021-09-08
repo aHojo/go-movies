@@ -46,13 +46,13 @@ func (app *application) Signin(w http.ResponseWriter, r *http.Request) {
 	claims.NotBefore = jwt.NewNumericTime(time.Now())
 	claims.Expires = jwt.NewNumericTime(time.Now().Add(time.Hour * 24))
 	claims.Issuer = "mydomain.com"
-	claims.Audiences = []string{"mydomain.come"}
+	claims.Audiences = []string{"mydomain.com"}
 
 	jwtBytes,err := claims.HMACSign(jwt.HS256, []byte(app.config.jwt.secret))
 	if err != nil {
 		app.errorJSON(w, errors.New("error signing the jwt"))
 		return
 	}
-	app.writeJSON(w, http.StatusOK, jwtBytes, "jwt")
+	app.writeJSON(w, http.StatusOK, string(jwtBytes), "jwt")
 
 }

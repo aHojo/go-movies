@@ -19,6 +19,14 @@ export default class App extends React.Component {
     }
   }
 
+  componentDidMount() {
+    const token = JSON.parse(window.localStorage.getItem("jwt"))
+    
+    if (token) {
+      this.setState({ jwt: token })
+    }
+  }
+  
   handleJWTChange = (jwt) => {
     this.setState({
       jwt
@@ -29,6 +37,7 @@ export default class App extends React.Component {
     this.setState({
       jwt: ""
     })
+    window.localStorage.removeItem("jwt");
   }
 
   render() {
@@ -79,6 +88,9 @@ export default class App extends React.Component {
                     </React.Fragment>
                   }
                 </ul>
+                <pre>
+                  {JSON.stringify(this.state,null, 3)}
+                </pre>
               </nav>
             </div>
 
@@ -98,9 +110,9 @@ export default class App extends React.Component {
                 <Route exact path="/login" 
                 component={(props) => <Login {...props} handleJWTChange={this.handleJWTChange} />} />
 
-                <Route path="/admin/movie/:id" component={EditMovie} />
+                <Route path="/admin/movie/:id" component={(props) => (<EditMovie {...props} jwt={this.state.jwt}/>)} />
                 <Route path="/admin">
-                  <Admin />
+                  <Admin jwt={this.state.jwt} />
                 </Route>
                 <Route path="/">
                   <Home />

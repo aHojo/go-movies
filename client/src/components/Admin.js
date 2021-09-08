@@ -1,13 +1,17 @@
 import React, { useState, useEffect, Fragment } from "react";
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 
-const Admin = () => {
+const Admin = ({jwt}) => {
     const [movies, setMovies] = useState([])
     const [isLoaded, setisLoaded] = useState(false)
     const [error, setError] = useState(null)
-
+    const history = useHistory()
     useEffect(() => {
 
+        if (!jwt) {
+            history.push("/login")
+            return
+        }
         async function fetchMovies() {
             try {
 
@@ -28,7 +32,7 @@ const Admin = () => {
 
         fetchMovies()
 
-    }, [])
+    }, [history, jwt])
 
     if (error) {
         return <div>Error: {error.message}</div>
