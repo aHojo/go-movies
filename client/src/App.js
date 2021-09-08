@@ -1,67 +1,56 @@
-import React from 'react';
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
-import Movies from './components/Movies';
-import Admin from './components/Admin';
-import Home from './components/Home';
-import OneMovie from './components/OneMovie';
-import Genres from './components/Genres';
-import OneGenre from './components/OneGenre';
-import EditMovie from './components/EditMovie';
-import Login from './components/Login';
-import Graphql from './components/Graphql';
+import React, {useState, useEffect, Fragment} from 'react'
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import Admin from "./components/Admin";
+import Home from "./components/Home";
 
-export default class App extends React.Component {
+// import GraphQL from "./components/GraphQL";
+import Movies from "./components/Movies";
+import Genres from "./components/Genres";
+import OneMovie from "./components/OneMovie";
+import OneGenre from "./components/OneGenre";
+import EditMovie from "./components/EditMovie";
+import Login from "./components/Login";
 
+export default function App(props) {
+    const [jwt, setJWT] = useState("");
 
-  constructor(props) {
-    super(props)
-    this.state = {
-      jwt: "",
+    useEffect(() => {
+        let t = window.localStorage.getItem("jwt");
+        if (t) {
+            if (jwt === "") {
+                setJWT(JSON.parse(t));
+            }
+        }
+    }, [jwt])
+
+    function handleJWTChange(jwt) {
+        setJWT(jwt);
     }
-  }
 
-  componentDidMount() {
-    const token = JSON.parse(window.localStorage.getItem("jwt"))
-    
-    if (token) {
-      this.setState({ jwt: token })
+    function logout() {
+        setJWT("");
+        window.localStorage.removeItem("jwt");
     }
-  }
-  
-  handleJWTChange = (jwt) => {
-    this.setState({
-      jwt
-    })
-  }
 
-  logout = () => {
-    this.setState({
-      jwt: ""
-    })
-    window.localStorage.removeItem("jwt");
-  }
-
-  render() {
-    let LoginLink;
-    if (this.state.jwt === "") {
-      LoginLink = <Link to="/login">Login</Link>
+    let loginLink;
+    if (jwt === "") {
+        loginLink = <Link to="/login">Login</Link>;
     } else {
-      LoginLink = <Link to="/logout" onClick={this.logout}>Logout</Link>
-
+        loginLink = (
+            <Link to="/logout" onClick={logout}>
+            Logout
+            </Link>
+        );
     }
-    return (
-      <Router>
-        <div className="container">
 
+    return (
+        <Router>
+        <div className="container">
           <div className="row">
             <div className="col mt-3">
-              <h1 className="mt-3">
-                Go Watch a Movie!
-              </h1>
+              <h1 className="mt-3">Go Watch a Movie!</h1>
             </div>
-            <div className="col mt-3 text-end">
-              {LoginLink}
-            </div>
+            <div className="col mt-3 text-end">{loginLink}</div>
             <hr className="mb-3"></hr>
           </div>
 
@@ -78,47 +67,63 @@ export default class App extends React.Component {
                   <li className="list-group-item">
                     <Link to="/genres">Genres</Link>
                   </li>
-                  {this.state.jwt !== "" &&
-                    < React.Fragment >
+                  {jwt !== "" && (
+                    <Fragment>
                       <li className="list-group-item">
-                        <Link to="/admin/movie/0">Add Movie</Link>
+                        <Link to="/admin/movie/0">Add movie</Link>
                       </li>
                       <li className="list-group-item">
                         <Link to="/admin">Manage Catalogue</Link>
                       </li>
-                    </React.Fragment>
-                  }
-                  <li className="list-group-item"><Link to="/graphql">GraphQL</Link></li>
+                    </Fragment>
+                  )}
+                  <li className="list-group-item">
+                    <Link to="/graphql">GraphQL</Link>
+                  </li>
                 </ul>
-                <pre>
-                  {JSON.stringify(this.state,null, 3)}
-                </pre>
               </nav>
             </div>
 
             <div className="col-md-10">
               <Switch>
-
                 <Route path="/movies/:id" component={OneMovie} />
 
                 <Route path="/movies">
                   <Movies />
                 </Route>
+
+                <Route path="/genre/:id" component={OneGenre} />
+
+                <Route
+                  exact
+                  path="/login"
+                  component={(props) => (
+                    <Login {...props} handleJWTChange={handleJWTChange} />
+                  )}
+                />
+
                 <Route exact path="/genres">
                   <Genres />
                 </Route>
-                <Route path="/genres/:id" component={OneGenre} />
-                
-                <Route exact path="/graphql"> 
-                  <Graphql />
-                </Route>
-                <Route exact path="/login" 
-                component={(props) => <Login {...props} handleJWTChange={this.handleJWTChange} />} />
 
-                <Route path="/admin/movie/:id" component={(props) => (<EditMovie {...props} jwt={this.state.jwt}/>)} />
-                <Route path="/admin">
-                  <Admin jwt={this.state.jwt} />
-                </Route>
+                {/* <Route exact path="/graphql">
+                  <GraphQL />
+                </Route> */}
+
+                <Route
+                  path="/admin/movie/:id"
+                  component={(props) => (
+                    <EditMovie {...props} jwt={jwt} />
+                  )}
+                />
+
+                <Route
+                  path="/admin"
+                  component={(props) => (
+                    <Admin {...props} jwt={jwt} />
+                  )}
+                />
+
                 <Route path="/">
                   <Home />
                 </Route>
@@ -126,7 +131,6 @@ export default class App extends React.Component {
             </div>
           </div>
         </div>
-      </Router >
+      </Router>
     );
-  }
 }

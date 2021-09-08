@@ -1,129 +1,119 @@
-import React, { Component } from 'react'
+import React, {useState, Fragment} from 'react'
 import Input from './form-components/Input'
 import Alert from './ui-components/Alert'
 
+function LoginFunc(props) {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [errors, setErrors] = useState([]);
+    const [alert, setAlert] = useState({type: "d-none", message: ""});
 
-export default class Login extends Component {
-  
-  constructor(props) {
-    super(props)
+    const handleSubmit = (evt) => {
+        evt.preventDefault();
+        if (props.jwt === "") {
+            props.history.push({
+                pathname: "/login",
+            });
+            return;
+        }
 
-    this.state = {
-      email: '',
-      password: '',
-      error: '',
-      errors: [],
-      alert: {
-        type: "d-none",
-        message: '',
-      }
-    }
-  }
-
-  handleChange = (e) => {
-    e.preventDefault()
-    let value = e.target.value;
-    let name = e.target.name;
-
-    this.setState((prevState) => {
-      return {
-        ...prevState,
-        [name]: value
-      }
-    })
-  }
-
-  handleSubmit = async (e) => {
-    e.preventDefault()
-    let errors = [];
-
-    if (this.state.email === '') {
-      errors.push('email')
-    }
-    if (this.state.password === '') {
-      errors.push('password')
-    }
-    if (errors.length > 0) {
-      this.setState({
-        errors: errors
-      })
-      return false;
-    }
-
-    const data = new FormData(e.target);
-    const payload = Object.fromEntries(data.entries());
-    const request = {
-      method: "POST",
-      body: JSON.stringify(payload),
-    }
-
-    try {
-
-      const response = await fetch('http://localhost:4000/v1/signin', request)
-      const json = await response.json();
-      if (json.error) {
-        this.setState({
-          alert: {
-            type: "alert alert-danger",
-            message: json.error.message
-          }
-        })
-        return false;
-      } 
-      this.handleJWTChange(json);
-      window.localStorage.setItem('jwt', JSON.stringify(json.jwt));
-    } catch (error) {
-      console.log(error)
+        if (email === "") {
+            errors.push("email");
+        }
+    
+        if (password === "") {
+            errors.push("password");
+        }
+    
+        setErrors(errors);
+    
+        if (errors.length > 0) {
+            return false;
+        }
+    
+        const data = new FormData(evt.target);
+        const payload = Object.fromEntries(data.entries());
+    
+        const requestOptions = {
+            method: "POST",
+            body: JSON.stringify(payload),
+        }
+    
+        fetch("http://localhost:4000/v1/signin", requestOptions)
+            .then((response) => {
+                if (response.status !== 200) {}
+                return response.json();
+            })
+            .then((data) => {
+                if (data.error) {
+                    console.log("login failed");
+                    console.log("error", data.error);
+                    setAlert({type: "alert-danger", message: "Invalid login" });
+                } else {
+                    console.log("Logging in");
+                    handleJWTChange(Object.values(data)[0]);
+                    window.localStorage.setItem("jwt", JSON.stringify(Object.values(data)[0]));
+                    props.history.push({
+                        pathname: "/admin",
+                    })
+                }
+            })
     }
 
-  }
+    function handleJWTChange(jwt) {
+        props.handleJWTChange(jwt);
+    }
 
-  hasError(key) {
-    return this.state.errors.indexOf(key) !== -1
-  }
+    function hasError(key) {
+        return errors.indexOf(key) !== -1;
+    }
 
-  handleJWTChange({jwt}) {
-    this.props.handleJWTChange(jwt);
-    this.props.history.push({
-      pathname: "/admin"
-    })
-  }
+    function handlePassword(evt) {
+        setPassword(evt.target.value);
+    }
 
-  render() {
+    function handleEmail(evt) {
+        setEmail(evt.target.value);
+    }
 
+    
     return (
-      <React.Fragment>
-        <h2>Login</h2>
-        <hr />
-        <Alert 
-          alertType={this.state.alert.type}
-          message={this.state.alert.message}
-        />
-        <form className="pt-3" onSubmit={this.handleSubmit}>
-          <Input 
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={this.state.email}
-            handleChange={this.handleChange}
-            className={this.hasError('email') ? "is-invalid" : ""}
-            errorDiv={this.hasError('email') ? "text-danger" : "d-none"}
-            errorMsg="Please enter a valid email address"
-          />
-          <Input 
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={this.state.password}
-            handleChange={this.handleChange}
-            className={this.hasError('password') ? "is-invalid" : ""}
-            errorDiv={this.hasError('password') ? "text-danger" : "d-none"}
-            errorMsg="Please enter a valid password"
-          />
-          <hr></hr>
-          <button type="submit" className="btn btn-primary">Login</button>
-        </form>
-      </React.Fragment>
-    );
-  }
+        <Fragment>
+            <h2>Login</h2>
+            <hr />
+            <Alert
+            alertType={alert.type}
+            alertMessage={alert.message}
+            />
+    
+            <form className="pt-3" onSubmit={handleSubmit}>
+            <Input
+                title={"Email"}
+                type={"email"}
+                name={"email"}
+                value={email}
+                handleChange={handleEmail}
+                className={hasError("email") ? "is-invalid" : ""}
+                errorDiv={hasError("email") ? "text-danger" : "d-none"}
+                errorMsg={"Please enter a valid email address"}
+            />
+    
+            <Input
+                title={"Password"}
+                type={"password"}
+                name={"password"}
+                handleChange={handlePassword}
+                className={hasError("password") ? "is-invalid" : ""}
+                errorDiv={hasError("password") ? "text-danger" : "d-none"}
+                errorMsg={"Please enter a password"}
+            />
+    
+            <hr />
+            <button className="btn btn-primary">Login</button>
+            </form>
+        </Fragment>
+        );
+      
 }
+
+export default LoginFunc;
