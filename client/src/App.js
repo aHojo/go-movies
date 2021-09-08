@@ -8,6 +8,7 @@ import Genres from './components/Genres';
 import OneGenre from './components/OneGenre';
 import EditMovie from './components/EditMovie';
 import Login from './components/Login';
+import Graphql from './components/Graphql';
 
 export default class App extends React.Component {
 
@@ -87,6 +88,7 @@ export default class App extends React.Component {
                       </li>
                     </React.Fragment>
                   }
+                  <li className="list-group-item"><Link to="/graphql">GraphQL</Link></li>
                 </ul>
                 <pre>
                   {JSON.stringify(this.state,null, 3)}
@@ -106,7 +108,10 @@ export default class App extends React.Component {
                   <Genres />
                 </Route>
                 <Route path="/genres/:id" component={OneGenre} />
-
+                
+                <Route exact path="/graphql"> 
+                  <Graphql />
+                </Route>
                 <Route exact path="/login" 
                 component={(props) => <Login {...props} handleJWTChange={this.handleJWTChange} />} />
 
